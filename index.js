@@ -8,6 +8,7 @@ const searchURL = 'https://api.nps.gov/api/v1/parks';
 function formatQueryParams(params) {
   const queryItems = Object.keys(params)
     .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+  console.log(queryItems);
   return queryItems.join('&');
 }
 
@@ -15,6 +16,7 @@ function displayResults(responseJson) {
   
   console.log(responseJson);
   $('#results-list').empty();
+  $("#js-error-message").empty();
   
   for (let i = 0; i < responseJson.data.length; i++){
   
@@ -24,22 +26,28 @@ function displayResults(responseJson) {
       <p>${responseJson.data[i].addresses[0].city}, ${responseJson.data[i].addresses[0].line1}, ${responseJson.data[i].addresses[0].line2}, ${responseJson.data[i].addresses[0].postalCode}, ${responseJson.data[i].addresses[0].stateCode} .</p>
       <p><a href='${responseJson.data[i].url}' target="_blank">${responseJson.data[i].url}</a></p>
       </li>`
-    );
 
+      
+    );
 };
 
 $('#results').removeClass('hidden');
 };
 
-
-
 function getParks(query, maxResults) {
+  
   const params = {
     api_key: apiKey,
     q: query,
     limit: maxResults,
     fields: "addresses",
   };
+
+  if (query.indexOf(",") > -1 ){
+    params.stateCode = params.q.replace(/\s/g,'');
+    delete params.q; 
+  }
+  
   const queryString = formatQueryParams(params)
   const url = searchURL + '?' + queryString;
 
